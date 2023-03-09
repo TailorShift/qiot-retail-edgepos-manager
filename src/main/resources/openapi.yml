@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: TailorShift API 1.0
+  description: |-
+    This is the TailorShift API providing endpoints for the Edge PoS devices running in the TailorShift shops.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+tags:
+  - name: pos
+    description: PoS endpoints
+
+paths:
+  /pos/authorize-employee:
+    post:
+      tags:
+        - pos
+      summary: Authorize an existing employee by his/her badge/tag/...
+      operationId: authorizeEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeTag"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/EmployeeTag"
+        required: true
+      responses:
+        "200":
+          description: Employee successfully authorized
+        "401":
+          description: Unauthorized
+
+  /pos/customer/{customerId}:
+    get:
+      tags:
+        - pos
+      summary: Get customer information for a specific customer
+      operationId: getCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: Retrieve the information for customer with customerId
+          required: true
+          schema:
+            type: string
+            example: "C2001225"
+
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Customer not found
+
+  /pos/customer/{customerId}/receipts:
+    get:
+      tags:
+        - pos
+      summary: Get receipts for a specific customer
+      operationId: getCustomerReceipts
+      parameters:
+        - name: customerId
+          in: path
+          description: Retrieve the information for customer with customerId
+          required: true
+          schema:
+            type: string
+            example: "C2001225"
+
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExistingReceipts"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Customer not found
+
+  /pos/receipt:
+    post:
+      tags:
+        - pos
+      summary: Create a new receipt
+      operationId: createReceipt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewReceipt"
+        required: true
+      responses:
+        "200":
+          description: Receipt successfully created
+        "401":
+          description: Unauthorized
+  /pos/receipt/{receiptId}/return:
+    post:
+      tags:
+        - pos
+      summary: Create a new return order for the specified receipt
+      operationId: createReceiptReturnOrder
+      parameters:
+        - name: receiptId
+          in: path
+          description: The receipt ID the return order is created for
+          required: true
+          schema:
+            type: string
+            example: "R2001225"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnOrder"
+        required: true
+      responses:
+        "200":
+          description: Receipt return order successfully created
+        "401":
+          description: Unauthorized
+
+components:
+  schemas:
+    Customer:
+      type: object
+      required:
+        - customerId
+        - name
+        - discount
+        - street1
+        - postcode
+        - city
+      properties:
+        customerId:
+          type: string
+          example: "C2001225"
+        name:
+          type: string
+          example: "John Doe"
+        discount:
+          type: number
+          format: float
+          example: 0.2
+        street1:
+          type: string
+          example: "Main Ave"
+        street2:
+          type: string
+        postcode:
+          type: string
+          example: "01254"
+        city:
+          type: string
+          example: "New York City"
+
+    EmployeeTag:
+      required:
+        - tagId
+      type: object
+      properties:
+        tagId:
+          type: string
+          example: "E10251001"
+
+    ExistingReceipts:
+      type: array
+      items:
+        $ref: "#/components/schemas/ExistingReceipt"
+
+    ExistingReceipt:
+      type: object
+      required:
+        - receiptId
+        - shopId
+        - createdDate
+        - totalTax
+        - totalSum
+        - positions
+      properties:
+        receiptId:
+          type: string
+          example: "R212250"
+        shopId:
+          type: string
+          example: "S45520"
+        createdDate:
+          type: string
+          format: date
+          example: "2023-03-10"
+        totalTax:
+          type: number
+          format: float
+          example: 16.20
+        totalSum:
+          type: number
+          format: float
+          example: 105.54
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReceiptPosition"
+
+    NewReceipt:
+      type: object
+      required:
+        - employeeId
+        - positions
+      properties:
+        customerId:
+          type: string
+          example: "C15485"
+        employeeId:
+          type: string
+          example: "E12252"
+        deliveryShopId:
+          type: string
+          example: "S12518"
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReceiptPosition"
+
+    ReceiptPosition:
+      type: object
+      required:
+        - productId
+        - position
+        - size
+        - color
+        - quantity
+        - returnedQuantity
+        - price
+        - discount
+        - taxRate
+      properties:
+        productId:
+          type: string
+          example: "P5875245"
+        position:
+          type: integer
+          example: 1
+          minimum: 1
+        size:
+          type: string
+          example: "M"
+        color:
+          type: string
+          example: "White"
+        quantity:
+          type: integer
+          example: 3
+          minimum: 1
+        returnedQuantity:
+          type: integer
+          example: 1
+          minimum: 0
+        price:
+          type: number
+          format: float
+          example: 13.20
+          minimum: 0
+        discount:
+          type: number
+          format: float
+          example: 0.05
+          maximum: 100
+          description: "Discount on this item (%)"
+        taxRate:
+          type: number
+          format: float
+          example: 0.19
+          description: "Tax rate on this item (%)"
+    ReturnOrder:
+      type: object
+      required:
+        - employeeId
+        - positions
+      properties:
+        employeeId:
+          type: string
+          example: "E12558"
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReturnPosition"
+
+    ReturnPosition:
+      type: object
+      required:
+        - receiptPositionId
+        - quantity
+      properties:
+        receiptPositionId:
+          type: string
+          example: "RP5875245"
+        quantity:
+          type: integer
+          example: 1
+          minimum: 1
