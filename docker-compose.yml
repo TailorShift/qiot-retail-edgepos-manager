@@ -20,6 +20,13 @@ services:
       POSTGRES_DB: edgepos_manager
     ports:
       - "5432:5432"
+
+  db-migrations:
+    image: quay.io/tailorshift/db
+    environment:
+      FLYWAY_URL: "jdbc:postgresql://db/edgepos_manager"
+      FLYWAY_USER: retail3
+      FLYWAY_PASSWORD: password
   kafka:
     image: docker.io/bitnami/kafka:3.4
     #image: registry.access.redhat.com/amq7/amq-broker-rhel8
