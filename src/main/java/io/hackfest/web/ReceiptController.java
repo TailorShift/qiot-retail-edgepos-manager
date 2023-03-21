@@ -4,22 +4,29 @@ import io.hackfest.dbmodel.ReceiptEntity;
 import io.hypersistence.tsid.TSID;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 @Path("/pos/receipts")
 public class ReceiptController {
+    @Inject
+    private EdgeDeviceVerifier edgeDeviceVerifier;
+
     @GET
     @Path("/{receiptId}")
     @ResponseStatus(200)
     public ReceiptEntity getProduct(
-            @PathParam("receiptId") Long receiptId
+            @PathParam("receiptId") Long receiptId,
+            HttpHeaders headers
     ) {
+        edgeDeviceVerifier.verifyRequest(headers);
         return ReceiptEntity.<ReceiptEntity>findByIdOptional(receiptId)
                 .orElseThrow(() -> new WebApplicationException(Response.status(404).build()));
     }
@@ -29,8 +36,11 @@ public class ReceiptController {
     @ResponseStatus(201)
     @Transactional
     public ReceiptEntity postReceipt(
-            ReceiptEntity receiptEntity
+            ReceiptEntity receiptEntity,
+            HttpHeaders headers
     ) {
+        edgeDeviceVerifier.verifyRequest(headers);
+
         // generate an ID that is better than a UUID (better for sorting / partitioning)
         // https://vladmihalcea.com/tsid-identifier-jpa-hibernate/
         long receiptId = TSID.Factory.getTsid().toLong();

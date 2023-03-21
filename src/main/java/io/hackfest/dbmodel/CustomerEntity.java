@@ -18,10 +18,10 @@ public class CustomerEntity extends PanacheEntityBase {
 
     public Long cardId;
 
-    @Column(name = "street1")
+    @Column(name = "street_1")
     public String street1;
 
-    @Column(name = "street2")
+    @Column(name = "street_2")
     public String street2;
 
     public String postcode;
