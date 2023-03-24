@@ -31,11 +31,6 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>io.hackfest</groupId>
-      <artifactId>edgepos-model</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
