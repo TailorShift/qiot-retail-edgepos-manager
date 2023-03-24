@@ -1,7 +1,9 @@
 package io.hackfest.web;
 
+import io.hackfest.dbmodel.PosDeviceEntity;
 import io.hackfest.dbmodel.ReceiptEntity;
 import io.hypersistence.tsid.TSID;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import javax.inject.Inject;
@@ -18,6 +20,9 @@ import javax.ws.rs.core.Response;
 public class ReceiptController {
     @Inject
     private EdgeDeviceVerifier edgeDeviceVerifier;
+
+    @ConfigProperty(name = "tailorshift.shop.id")
+    private Long shopId;
 
     @GET
     @Path("/{receiptId}")
@@ -39,12 +44,16 @@ public class ReceiptController {
             ReceiptEntity receiptEntity,
             HttpHeaders headers
     ) {
-        edgeDeviceVerifier.verifyRequest(headers);
+        String deviceId = edgeDeviceVerifier.verifyRequest(headers);
+        PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
+                .orElseThrow(() -> new WebApplicationException("Unknown deviceId " + deviceId, 401));
 
         // generate an ID that is better than a UUID (better for sorting / partitioning)
         // https://vladmihalcea.com/tsid-identifier-jpa-hibernate/
         long receiptId = TSID.Factory.getTsid().toLong();
         receiptEntity.id = receiptId;
+        receiptEntity.shopId = shopId;
+        receiptEntity.posDeviceId = device.id;
 
         for (var position : receiptEntity.positions) {
             position.id = receiptId++;
