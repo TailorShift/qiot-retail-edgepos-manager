@@ -1,6 +1,8 @@
 package io.hackfest.web;
 
+import io.hackfest.dbmodel.InventoryMovementEntity;
 import io.hackfest.dbmodel.ProductEntity;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import javax.inject.Inject;
@@ -16,6 +18,9 @@ public class ProductController {
     @Inject
     private EdgeDeviceVerifier edgeDeviceVerifier;
 
+    @ConfigProperty(name = "tailorshift.shop.id")
+    private Long shopId;
+
     @GET
     @Path("/{productId}")
     @ResponseStatus(200)
@@ -24,7 +29,11 @@ public class ProductController {
             HttpHeaders headers
     ) {
         edgeDeviceVerifier.verifyRequest(headers);
-        return ProductEntity.<ProductEntity>findByIdOptional(productId)
+        ProductEntity product = ProductEntity.<ProductEntity>findByIdOptional(productId)
                 .orElseThrow(() -> new WebApplicationException(Response.status(404).build()));
+
+        product.available = InventoryMovementEntity.getAvailableItems(productId, shopId);
+
+        return product;
     }
 }

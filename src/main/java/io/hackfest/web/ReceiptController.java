@@ -1,23 +1,20 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.PosDeviceEntity;
-import io.hackfest.dbmodel.ReceiptEntity;
+import io.hackfest.dbmodel.*;
 import io.hypersistence.tsid.TSID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 
 @Path("/pos/receipts")
 public class ReceiptController {
+
     @Inject
     private EdgeDeviceVerifier edgeDeviceVerifier;
 
@@ -50,17 +47,58 @@ public class ReceiptController {
 
         // generate an ID that is better than a UUID (better for sorting / partitioning)
         // https://vladmihalcea.com/tsid-identifier-jpa-hibernate/
-        long receiptId = TSID.Factory.getTsid().toLong();
-        receiptEntity.id = receiptId;
+        receiptEntity.id = TSID.Factory.getTsid().toLong();
         receiptEntity.shopId = shopId;
         receiptEntity.posDeviceId = device.id;
 
+        receiptEntity.persistAndFlush();
+
+        long positionId = receiptEntity.id;
         for (var position : receiptEntity.positions) {
-            position.id = receiptId++;
+            verifyPosition(position);
+
+            position.id = positionId++;
+
+            var movement = new InventoryMovementEntity();
+            movement.id = position.id;
+            movement.shopId = shopId;
+            movement.productId = position.productId;
+            movement.receiptId = receiptEntity.id;
+            movement.color = position.color;
+            movement.size = position.size;
+            movement.quantity = -position.quantity;
+
+            InventoryMovementEntity.persist(movement);
         }
 
-        ReceiptEntity.persist(receiptEntity);
-
         return receiptEntity;
+    }
+
+    private void verifyPosition(ReceiptPositionEntity position) {
+        // verify product exists
+        var product = ProductEntity.<ProductEntity>findByIdOptional(position.productId)
+                .orElseThrow(() -> new WebApplicationException("Unknown productId " + position.productId, 400));
+
+        // verify color
+        if (!product.colors.contains(position.color)) {
+            throw new WebApplicationException("Color " + position.color + " is not valid for product id " + position.productId, 400);
+        }
+
+        // verify in stock
+        // attention : we ignore the case if the same product/size/color appears multiple times on the same receipt
+        Long inStock = InventoryMovementEntity.getCurrentQuantity(
+                        position.productId,
+                        shopId,
+                        position.size,
+                        position.color
+                ).map(InventoryQuantity::quantity)
+                .orElse(0L);
+
+        if (inStock < position.quantity) {
+            throw new WebApplicationException(
+                    MessageFormat.format("Stock not sufficient for product id {0} for size {1} with color {2}",
+                            position.productId, position.size, position.color), 400);
+        }
+
     }
 }
