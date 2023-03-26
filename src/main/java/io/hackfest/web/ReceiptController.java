@@ -1,6 +1,6 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.*;
+import io.hackfest.db.*;
 import io.hackfest.web.error.ApiException;
 import io.hackfest.web.error.ErrorCode;
 import io.hypersistence.tsid.TSID;

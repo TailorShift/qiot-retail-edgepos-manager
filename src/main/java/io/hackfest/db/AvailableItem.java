@@ -1,4 +1,4 @@
-package io.hackfest.dbmodel;
+package io.hackfest.db;
 
 public record AvailableItem(
         Long shopId,

@@ -1,4 +1,4 @@
-package io.hackfest.dbmodel;
+package io.hackfest.db;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;

@@ -1,12 +1,11 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.CustomerEntity;
-import io.hackfest.dbmodel.ReceiptEntity;
+import io.hackfest.db.CustomerEntity;
+import io.hackfest.db.ReceiptEntity;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/pos/customers")

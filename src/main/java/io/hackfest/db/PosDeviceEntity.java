@@ -1,8 +1,7 @@
-package io.hackfest.dbmodel;
+package io.hackfest.db;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;

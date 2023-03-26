@@ -1,4 +1,4 @@
-package io.hackfest.dbmodel;
+package io.hackfest.db;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 

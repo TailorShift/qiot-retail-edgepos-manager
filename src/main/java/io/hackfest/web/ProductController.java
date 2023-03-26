@@ -1,7 +1,7 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.InventoryMovementEntity;
-import io.hackfest.dbmodel.ProductEntity;
+import io.hackfest.db.InventoryMovementEntity;
+import io.hackfest.db.ProductEntity;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.ResponseStatus;
 

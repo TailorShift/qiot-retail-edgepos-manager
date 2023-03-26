@@ -1,6 +1,6 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.PosDeviceEntity;
+import io.hackfest.db.PosDeviceEntity;
 import io.hackfest.web.error.ApiException;
 import io.hackfest.web.error.ErrorCode;
 import org.slf4j.Logger;

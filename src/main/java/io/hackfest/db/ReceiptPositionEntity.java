@@ -1,10 +1,9 @@
-package io.hackfest.dbmodel;
+package io.hackfest.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "receipt_positions")

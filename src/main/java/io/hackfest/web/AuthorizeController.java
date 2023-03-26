@@ -1,7 +1,6 @@
 package io.hackfest.web;
 
-import io.hackfest.dbmodel.EmployeeEntity;
-import io.hackfest.dbmodel.EmployeeRepository;
+import io.hackfest.db.EmployeeEntity;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 import javax.inject.Inject;
