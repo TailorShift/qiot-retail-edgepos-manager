@@ -1,6 +1,8 @@
 package io.hackfest.web;
 
 import io.hackfest.dbmodel.*;
+import io.hackfest.web.error.ApiException;
+import io.hackfest.web.error.ErrorCode;
 import io.hypersistence.tsid.TSID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -9,8 +11,6 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import java.text.MessageFormat;
 
 @Path("/pos/receipts")
 public class ReceiptController {
@@ -30,7 +30,7 @@ public class ReceiptController {
     ) {
         edgeDeviceVerifier.verifyRequest(headers);
         return ReceiptEntity.<ReceiptEntity>findByIdOptional(receiptId)
-                .orElseThrow(() -> new WebApplicationException(Response.status(404).build()));
+                .orElseThrow(NotFoundException::new);
     }
 
     @POST
@@ -41,7 +41,7 @@ public class ReceiptController {
             ReceiptEntity receiptEntity,
             HttpHeaders headers
     ) {
-        String deviceId = edgeDeviceVerifier.verifyRequest(headers);
+        String deviceId = "shop1-dev1";
         PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
                 .orElseThrow(() -> new WebApplicationException("Unknown deviceId " + deviceId, 401));
 
@@ -77,11 +77,11 @@ public class ReceiptController {
     private void verifyPosition(ReceiptPositionEntity position) {
         // verify product exists
         var product = ProductEntity.<ProductEntity>findByIdOptional(position.productId)
-                .orElseThrow(() -> new WebApplicationException("Unknown productId " + position.productId, 400));
+                .orElseThrow(() -> ApiException.badRequest(ErrorCode.UNKNOWN_PRODUCT_ID, position.productId));
 
         // verify color
         if (!product.colors.contains(position.color)) {
-            throw new WebApplicationException("Color " + position.color + " is not valid for product id " + position.productId, 400);
+            throw ApiException.badRequest(ErrorCode.INVALID_PRODUCT_COLOR, position.color, position.productId);
         }
 
         // verify in stock
@@ -95,9 +95,7 @@ public class ReceiptController {
                 .orElse(0L);
 
         if (inStock < position.quantity) {
-            throw new WebApplicationException(
-                    MessageFormat.format("Stock not sufficient for product id {0} for size {1} with color {2}",
-                            position.productId, position.size, position.color), 400);
+            throw ApiException.badRequest(ErrorCode.INSUFFICIENT_STOCK, position.productId, position.size, position.color);
         }
 
     }

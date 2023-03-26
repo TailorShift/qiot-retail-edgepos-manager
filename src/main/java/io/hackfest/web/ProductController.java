@@ -7,11 +7,10 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 
 @Path("/pos/products")
 public class ProductController {
@@ -30,7 +29,7 @@ public class ProductController {
     ) {
         edgeDeviceVerifier.verifyRequest(headers);
         ProductEntity product = ProductEntity.<ProductEntity>findByIdOptional(productId)
-                .orElseThrow(() -> new WebApplicationException(Response.status(404).build()));
+                .orElseThrow(NotFoundException::new);
 
         product.available = InventoryMovementEntity.getAvailableItems(productId, shopId);
 
