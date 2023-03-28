@@ -23,5 +23,5 @@ public class DebeziumReceiptExport extends PanacheEntityBase {
 
     @Type(type = "json")
     @Column(columnDefinition = "json")
-    public ReceiptEntity payload;
+    public String payload;
 }

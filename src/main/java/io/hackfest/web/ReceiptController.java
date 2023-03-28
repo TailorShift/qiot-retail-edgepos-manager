@@ -1,5 +1,7 @@
 package io.hackfest.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hackfest.db.*;
 import io.hackfest.web.error.ApiException;
 import io.hackfest.web.error.ErrorCode;
@@ -17,7 +19,10 @@ import java.time.LocalDateTime;
 public class ReceiptController {
 
     @Inject
-    private EdgeDeviceVerifier edgeDeviceVerifier;
+    EdgeDeviceVerifier edgeDeviceVerifier;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @ConfigProperty(name = "tailorshift.shop.id")
     private Long shopId;
@@ -41,7 +46,7 @@ public class ReceiptController {
     public ReceiptEntity postReceipt(
             ReceiptEntity receiptEntity,
             HttpHeaders headers
-    ) {
+    ) throws JsonProcessingException {
         String deviceId = "shop1-dev1";
         PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
                 .orElseThrow(() -> new WebApplicationException("Unknown deviceId " + deviceId, 401));
@@ -76,7 +81,7 @@ public class ReceiptController {
         DebeziumReceiptExport export = new DebeziumReceiptExport();
         export.id = receiptEntity.id;
         export.timestamp = LocalDateTime.now();
-        export.payload = receiptEntity;
+        export.payload = objectMapper.writeValueAsString(receiptEntity);
 
         DebeziumReceiptExport.persist(export);
 
