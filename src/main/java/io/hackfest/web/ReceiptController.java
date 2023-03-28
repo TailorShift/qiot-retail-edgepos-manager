@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
+import java.time.LocalDateTime;
 
 @Path("/pos/receipts")
 public class ReceiptController {
@@ -48,6 +49,7 @@ public class ReceiptController {
         // generate an ID that is better than a UUID (better for sorting / partitioning)
         // https://vladmihalcea.com/tsid-identifier-jpa-hibernate/
         receiptEntity.id = TSID.Factory.getTsid().toLong();
+        receiptEntity.createdAt = LocalDateTime.now();
         receiptEntity.shopId = shopId;
         receiptEntity.posDeviceId = device.id;
 
@@ -70,6 +72,13 @@ public class ReceiptController {
 
             InventoryMovementEntity.persist(movement);
         }
+
+        DebeziumReceiptExport export = new DebeziumReceiptExport();
+        export.id = receiptEntity.id;
+        export.timestamp = LocalDateTime.now();
+        export.payload = receiptEntity;
+
+        DebeziumReceiptExport.persist(export);
 
         return receiptEntity;
     }
