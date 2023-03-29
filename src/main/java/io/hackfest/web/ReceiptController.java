@@ -1,5 +1,7 @@
 package io.hackfest.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hackfest.db.*;
 import io.hackfest.web.error.ApiException;
 import io.hackfest.web.error.ErrorCode;
@@ -11,12 +13,16 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
+import java.time.LocalDateTime;
 
 @Path("/pos/receipts")
 public class ReceiptController {
 
     @Inject
-    private EdgeDeviceVerifier edgeDeviceVerifier;
+    EdgeDeviceVerifier edgeDeviceVerifier;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @ConfigProperty(name = "tailorshift.shop.id")
     private Long shopId;
@@ -40,7 +46,7 @@ public class ReceiptController {
     public ReceiptEntity postReceipt(
             ReceiptEntity receiptEntity,
             HttpHeaders headers
-    ) {
+    ) throws JsonProcessingException {
         String deviceId = "shop1-dev1";
         PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
                 .orElseThrow(() -> new WebApplicationException("Unknown deviceId " + deviceId, 401));
@@ -48,6 +54,7 @@ public class ReceiptController {
         // generate an ID that is better than a UUID (better for sorting / partitioning)
         // https://vladmihalcea.com/tsid-identifier-jpa-hibernate/
         receiptEntity.id = TSID.Factory.getTsid().toLong();
+        receiptEntity.createdAt = LocalDateTime.now();
         receiptEntity.shopId = shopId;
         receiptEntity.posDeviceId = device.id;
 
@@ -70,6 +77,13 @@ public class ReceiptController {
 
             InventoryMovementEntity.persist(movement);
         }
+
+        DebeziumReceiptExport export = new DebeziumReceiptExport();
+        export.id = receiptEntity.id;
+        export.timestamp = LocalDateTime.now();
+        export.payload = objectMapper.writeValueAsString(receiptEntity);
+
+        DebeziumReceiptExport.persist(export);
 
         return receiptEntity;
     }
