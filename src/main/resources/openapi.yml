@@ -6,12 +6,39 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.0
+  version: 1.0.1
 tags:
   - name: pos
     description: PoS endpoints
 
 paths:
+  /pos/products/{productId}:
+    get:
+      tags:
+        - pos
+      summary: Get product information for a specific product
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          description: Retrieve the information for product with productId
+          required: true
+          schema:
+            type: string
+            example: "12345"
+
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Product not found
+
   /pos/authorize-employee:
     post:
       tags:
@@ -33,7 +60,7 @@ paths:
         "401":
           description: Unauthorized
 
-  /pos/customer/{customerId}:
+  /pos/customers/{customerId}:
     get:
       tags:
         - pos
@@ -60,7 +87,7 @@ paths:
         "404":
           description: Customer not found
 
-  /pos/customer/{customerId}/receipts:
+  /pos/customers/{customerId}/receipts:
     get:
       tags:
         - pos
@@ -87,7 +114,7 @@ paths:
         "404":
           description: Customer not found
 
-  /pos/receipt:
+  /pos/receipts:
     post:
       tags:
         - pos
@@ -104,7 +131,7 @@ paths:
           description: Receipt successfully created
         "401":
           description: Unauthorized
-  /pos/receipt/{receiptId}/return:
+  /pos/receipts/{receiptId}/return:
     post:
       tags:
         - pos
@@ -132,6 +159,75 @@ paths:
 
 components:
   schemas:
+    Product:
+      type: object
+      required:
+        - available
+        - code
+        - colors
+        - id
+        - manufacturer
+        - name
+        - price
+        - taxRate
+      properties:
+        available:
+          type: array
+          items:
+            $ref: "#/components/schemas/AvailableProduct"
+        code:
+          type: string
+          description: "Product code"
+          example: "12448573"
+        colors:
+          type: array
+          items:
+            type: string
+        id:
+          type: number
+          format: integer
+          example: 1
+        manufacturer:
+          type: string
+          example: "Nike"
+        name:
+          type: string
+          example: "Sneaker"
+        price:
+          type: number
+          format: float
+          example: 19.99
+        taxRate:
+          type: number
+          format: float
+          example: 0.19
+
+    AvailableProduct:
+      type: object
+      required:
+        - color
+        - quantity
+        - shopDiscount
+        - shopId
+        - size
+      properties:
+        color:
+          type: string
+          example: "Black"
+        quantity:
+          type: integer
+          example: 100
+        shopDiscount:
+          type: number
+          format: float
+          example: 0.1
+        shopId:
+          type: integer
+          example: 1
+        size:
+          type: string
+          example: "S"
+
     Customer:
       type: object
       required:
@@ -143,8 +239,8 @@ components:
         - city
       properties:
         customerId:
-          type: string
-          example: "C2001225"
+          type: integer
+          example: 1234
         name:
           type: string
           example: "John Doe"
@@ -166,12 +262,12 @@ components:
 
     EmployeeTag:
       required:
-        - tagId
+        - card-id
       type: object
       properties:
-        tagId:
-          type: string
-          example: "E10251001"
+        card-id:
+          type: integer
+          example: 1234
 
     ExistingReceipts:
       type: array
@@ -216,16 +312,28 @@ components:
       required:
         - employeeId
         - positions
+        - discountTotal
+        - taxTotal
+        - amountTotal
       properties:
         customerId:
-          type: string
-          example: "C15485"
+          type: integer
+          example: 1234
         employeeId:
-          type: string
-          example: "E12252"
+          type: integer
+          example: 1234
         deliveryShopId:
-          type: string
-          example: "S12518"
+          type: integer
+          example: 1234
+        discountTotal:
+          type: integer
+          example: 0
+        amountTotal:
+          type: integer
+          example: 0
+        taxTotal:
+          type: integer
+          example: 0
         positions:
           type: array
           items:
