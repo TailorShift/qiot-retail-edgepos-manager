@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 public class AuthorizeController {
 
     @Inject
-    private EdgeDeviceVerifier edgeDeviceVerifier;
+    EdgeDeviceVerifier edgeDeviceVerifier;
 
     @POST
     @Path("authorize-employee")

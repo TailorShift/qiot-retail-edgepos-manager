@@ -26,13 +26,13 @@ import java.util.concurrent.TimeoutException;
 public class ProductController {
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
     @Inject
-    private EdgeDeviceVerifier edgeDeviceVerifier;
+    EdgeDeviceVerifier edgeDeviceVerifier;
 
     @ConfigProperty(name = "tailorshift.shop.id")
-    private Long shopId;
+    Long shopId;
 
     @ConfigProperty(name = "tailorshift.datacenter.inventoryManagerUrl")
-    private String inventoryManagerUrl;
+    String inventoryManagerUrl;
 
     private final WebClient webClient = WebClient.create(Vertx.vertx());
 

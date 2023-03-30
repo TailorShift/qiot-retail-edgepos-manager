@@ -25,7 +25,7 @@ public class ReceiptController {
     ObjectMapper objectMapper;
 
     @ConfigProperty(name = "tailorshift.shop.id")
-    private Long shopId;
+    Long shopId;
 
     @GET
     @Path("/{receiptId}")
