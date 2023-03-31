@@ -25,7 +25,7 @@ public class ReceiptController {
     ObjectMapper objectMapper;
 
     @ConfigProperty(name = "tailorshift.shop.id")
-    private Long shopId;
+    Long shopId;
 
     @GET
     @Path("/{receiptId}")
@@ -47,7 +47,7 @@ public class ReceiptController {
             ReceiptEntity receiptEntity,
             HttpHeaders headers
     ) throws JsonProcessingException {
-        String deviceId = "shop1-dev1";
+        String deviceId = edgeDeviceVerifier.verifyRequest(headers);
         PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
                 .orElseThrow(() -> new WebApplicationException("Unknown deviceId " + deviceId, 401));
 

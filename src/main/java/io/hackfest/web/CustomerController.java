@@ -11,7 +11,7 @@ import java.util.List;
 @Path("/pos/customers")
 public class CustomerController {
     @Inject
-    private EdgeDeviceVerifier edgeDeviceVerifier;
+    EdgeDeviceVerifier edgeDeviceVerifier;
 
     @GET
     @Path("/{customerId}")
